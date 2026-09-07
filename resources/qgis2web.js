@@ -433,7 +433,7 @@ for (var i = 0; i < currentFeatureKeys.length; i++) {
         popupText +=
             '<tr>' +
             popupField +
-;            '</tr>';
+            '</tr>';
     }
 }
 
