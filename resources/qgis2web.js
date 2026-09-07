@@ -173,7 +173,6 @@ if (
     if (station !== null && station !== '') {
 
         popupText +=
-            '<td colspan="2">' +
             '<div class="station-popup">' +
             '<div class="station-title">Station ' +
             autolinker.link(String(station)) +
