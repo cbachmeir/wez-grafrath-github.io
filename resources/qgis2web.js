@@ -151,53 +151,293 @@ var doHighlight = false;
 var doHover = false;
 
 function createPopupField(currentFeature, currentFeatureKeys, layer) {
+   /*
+ * Spezielles Popup für den Layer "Punkte_3"
+ *
+ * Die Erkennung erfolgt über die Felder "Station"
+ * und "Erläuterung". Dadurch muss der Layername
+ * nicht fest im Code hinterlegt werden.
+ */
+
+if (
+    currentFeature.get('Station') !== undefined &&
+    currentFeature.get('Erläuterung') !== undefined
+) {
+
+    var station = currentFeature.get('Station');
+    var erklaerung = currentFeature.get('Erläuterung');
+
     var popupText = '';
-    for (var i = 0; i < currentFeatureKeys.length; i++) {
-        if (currentFeatureKeys[i] != 'geometry' &&
-            currentFeatureKeys[i] != 'layerObject' &&
-            currentFeatureKeys[i] != 'idO' &&
-            currentFeatureKeys[i] != '_mvtLayer_') {
-            var popupField = '';
-            if (layer.get('fieldLabels')[currentFeatureKeys[i]] == "hidden field") {
-                continue;
-            } else if (layer.get('fieldLabels')[currentFeatureKeys[i]] == "inline label - visible with data") {
-                if (currentFeature.get(currentFeatureKeys[i]) == null) {
-                    continue;
-                }
-            }
-            if (layer.get('fieldLabels')[currentFeatureKeys[i]] == "inline label - always visible" ||
-                layer.get('fieldLabels')[currentFeatureKeys[i]] == "inline label - visible with data") {
-                popupField += '<th>' + layer.get('fieldAliases')[currentFeatureKeys[i]] + '</th><td>';
-            } else {
-                popupField += '<td colspan="2">';
-            }
-            if (layer.get('fieldLabels')[currentFeatureKeys[i]] == "header label - visible with data") {
-                if (currentFeature.get(currentFeatureKeys[i]) == null) {
-                    continue;
-                }
-            }
-            if (layer.get('fieldLabels')[currentFeatureKeys[i]] == "header label - always visible" ||
-                layer.get('fieldLabels')[currentFeatureKeys[i]] == "header label - visible with data") {
-                popupField += '<strong>' + layer.get('fieldAliases')[currentFeatureKeys[i]] + '</strong><br />';
-            }
-            if (layer.get('fieldImages')[currentFeatureKeys[i]] != "ExternalResource") {
-				popupField += (currentFeature.get(currentFeatureKeys[i]) != null ? autolinker.link(currentFeature.get(currentFeatureKeys[i]).toLocaleString()) + '</td>' : '');
-			} else {
-				var fieldValue = currentFeature.get(currentFeatureKeys[i]);
-				if (/\.(gif|jpg|jpeg|tif|tiff|png|avif|webp|svg)$/i.test(fieldValue)) {
-					popupField += (fieldValue != null ? '<img src="images/' + fieldValue.replace(/[\\\/:]/g, '_').trim() + '" /></td>' : '');
-				} else if (/\.(mp4|webm|ogg|avi|mov|flv)$/i.test(fieldValue)) {
-					popupField += (fieldValue != null ? '<video controls><source src="images/' + fieldValue.replace(/[\\\/:]/g, '_').trim() + '" type="video/mp4">Il tuo browser non supporta il tag video.</video></td>' : '');
-				} else if (/\.(mp3|wav|ogg|aac|flac)$/i.test(fieldValue)) {
-                    popupField += (fieldValue != null ? '<audio controls><source src="images/' + fieldValue.replace(/[\\\/:]/g, '_').trim() + '" type="audio/mpeg">Il tuo browser non supporta il tag audio.</audio></td>' : '');
-                } else {
-					popupField += (fieldValue != null ? autolinker.link(fieldValue.toLocaleString()) + '</td>' : '');
-				}
-			}
-            popupText += '<tr>' + popupField + '</tr>';
-        }
+
+    // Station als Überschrift
+    if (station !== null && station !== '') {
+
+        popupText +=
+            '<td colspan="2">' +
+            '<div class="station-popup">' +
+            '<div class="station-title">Station ' +
+            autolinker.link(String(station)) +
+            '</div>';
+
+    } else {
+
+        popupText +=
+            '<td colspan="2">' +
+            '<div class="station-popup">';
     }
-    return popupText;
+
+
+    // Erläuterung / Baumarten
+    if (erklaerung !== null && erklaerung !== '') {
+
+        // Kommagetrennte Baumarten in einzelne Einträge aufteilen
+        var baumarten = String(erklaerung).split(',');
+
+        popupText += '<div class="station-trees">';
+
+        baumarten.forEach(function(baum) {
+
+            baum = baum.trim();
+
+            if (baum !== '') {
+
+                popupText +=
+                    '<div class="tree-item">• ' +
+                    autolinker.link(baum) +
+                    '</div>';
+            }
+
+        });
+
+        popupText += '</div>';
+    }
+
+    popupText +=
+        '</div></td>';
+
+    return '<tr>' + popupText + '</tr>';
+}
+
+
+/*
+ * Standard-Popup für alle anderen Layer
+ * ---------------------------------------
+ * Dieser Teil entspricht im Wesentlichen
+ * dem ursprünglichen qgis2web-Code.
+ */
+
+var popupText = '';
+
+for (var i = 0; i < currentFeatureKeys.length; i++) {
+
+    if (
+        currentFeatureKeys[i] != 'geometry' &&
+        currentFeatureKeys[i] != 'layerObject' &&
+        currentFeatureKeys[i] != 'idO' &&
+        currentFeatureKeys[i] != '_mvtLayer_'
+    ) {
+
+        var popupField = '';
+
+        if (
+            layer.get('fieldLabels')[currentFeatureKeys[i]]
+            == "hidden field"
+        ) {
+            continue;
+
+        } else if (
+            layer.get('fieldLabels')[currentFeatureKeys[i]]
+            == "inline label - visible with data"
+        ) {
+
+            if (
+                currentFeature.get(currentFeatureKeys[i])
+                == null
+            ) {
+                continue;
+            }
+        }
+
+
+        if (
+            layer.get('fieldLabels')[currentFeatureKeys[i]]
+            == "inline label - always visible" ||
+
+            layer.get('fieldLabels')[currentFeatureKeys[i]]
+            == "inline label - visible with data"
+        ) {
+
+            popupField +=
+                '<th>' +
+                layer.get('fieldAliases')[currentFeatureKeys[i]] +
+                '</th><td>';
+
+        } else {
+
+            popupField += '<td colspan="2">';
+        }
+
+
+        if (
+            layer.get('fieldLabels')[currentFeatureKeys[i]]
+            == "header label - visible with data"
+        ) {
+
+            if (
+                currentFeature.get(currentFeatureKeys[i])
+                == null
+            ) {
+                continue;
+            }
+        }
+
+
+        if (
+            layer.get('fieldLabels')[currentFeatureKeys[i]]
+            == "header label - always visible" ||
+
+            layer.get('fieldLabels')[currentFeatureKeys[i]]
+            == "header label - visible with data"
+        ) {
+
+            popupField +=
+                '<strong>' +
+                layer.get('fieldAliases')[currentFeatureKeys[i]] +
+                '</strong><br />';
+        }
+
+
+        if (
+            layer.get('fieldImages')[currentFeatureKeys[i]]
+            != "ExternalResource"
+        ) {
+
+            popupField +=
+                (
+                    currentFeature.get(currentFeatureKeys[i])
+                    != null
+                ?
+
+                    autolinker.link(
+                        currentFeature
+                            .get(currentFeatureKeys[i])
+                            .toLocaleString()
+                    ) +
+
+                    '</td>'
+
+                :
+
+                    ''
+                );
+
+        } else {
+
+            var fieldValue =
+                currentFeature.get(currentFeatureKeys[i]);
+
+
+            if (
+                /\.(gif|jpg|jpeg|tif|tiff|png|avif|webp|svg)$/i
+                .test(fieldValue)
+            ) {
+
+                popupField +=
+                    (
+                        fieldValue != null
+
+                        ?
+
+                        '<img src="images/' +
+                        fieldValue
+                            .replace(/[\\\/:]/g, '_')
+                            .trim() +
+                        '" /></td>'
+
+                        :
+
+                        ''
+                    );
+
+            } else if (
+                /\.(mp4|webm|ogg|avi|mov|flv)$/i
+                .test(fieldValue)
+            ) {
+
+                popupField +=
+                    (
+                        fieldValue != null
+
+                        ?
+
+                        '<video controls>' +
+                        '<source src="images/' +
+                        fieldValue
+                            .replace(/[\\\/:]/g, '_')
+                            .trim() +
+                        '" type="video/mp4">' +
+                        'Il tuo browser non supporta il tag video.' +
+                        '</video></td>'
+
+                        :
+
+                        ''
+                    );
+
+            } else if (
+                /\.(mp3|wav|ogg|aac|flac)$/i
+                .test(fieldValue)
+            ) {
+
+                popupField +=
+                    (
+                        fieldValue != null
+
+                        ?
+
+                        '<audio controls>' +
+                        '<source src="images/' +
+                        fieldValue
+                            .replace(/[\\\/:]/g, '_')
+                            .trim() +
+                        '" type="audio/mpeg">' +
+                        'Il tuo browser non supporta il tag audio.' +
+                        '</audio></td>'
+
+                        :
+
+                        ''
+                    );
+
+            } else {
+
+                popupField +=
+                    (
+                        fieldValue != null
+
+                        ?
+
+                        autolinker.link(
+                            fieldValue.toLocaleString()
+                        ) +
+
+                        '</td>'
+
+                        :
+
+                        ''
+                    );
+            }
+        }
+
+        popupText +=
+            '<tr>' +
+            popupField +
+;            '</tr>';
+    }
+}
+
+return popupText
 }
 
 var highlight;
