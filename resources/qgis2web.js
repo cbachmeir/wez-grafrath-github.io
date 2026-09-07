@@ -485,12 +485,8 @@ function onPointerMove(evt) {
                     currentFeature = clusteredFeatures[n];
                     currentFeatureKeys = currentFeature.getKeys();
                     popupText += '<li><table>'
-                    if (
-    currentFeature.get('Station') === undefined ||
-    currentFeature.get('Erläuterung') === undefined
-) {
-    popupText += '<a><b>' + layer.get('popuplayertitle') + '</b></a>';
-}
+                    popupText += '<a><b>' + layer.get('popuplayertitle') + '</b></a>';
+popupText += createPopupField(currentFeature, currentFeatureKeys, layer);
 
 popupText += createPopupField(
     currentFeature,
@@ -634,18 +630,8 @@ function onSingleClickFeatures(evt) {
                         currentFeature = clusteredFeatures[n];
                         currentFeatureKeys = currentFeature.getKeys();
                         popupText += '<li><table>';
-                       if (
-    currentFeature.get('Station') === undefined ||
-    currentFeature.get('Erläuterung') === undefined
-) {
-    popupText += '<a><b>' + layer.get('popuplayertitle') + '</b></a>';
-}
-
-popupText += createPopupField(
-    currentFeature,
-    currentFeatureKeys,
-    layer
-);
+                      popupText += '<a><b>' + layer.get('popuplayertitle') + '</b></a>';
+						popupText += createPopupField(currentFeature, currentFeatureKeys, layer);
                         popupText += '</table></li>';    
                     }
                 }
